@@ -26,13 +26,15 @@ function App() {
     const timestamp = moment(new Date().getTime()).format(
       "YYYY-MM-DD HH:mm:ss"
     );
-    const name = `Quest ${questCount}`;
 
     return {
-      lat,
-      lng,
-      timestamp,
-      name,
+      [`quest ${questCount}`]: {
+        location: {
+          lat,
+          lng,
+        },
+        timestamp,
+      },
     };
   };
 
@@ -86,24 +88,36 @@ function App() {
           mapContainerStyle={{ width: "100%", height: "100%" }}
           onClick={handleMapClick}
         >
-          {markers?.map((marker, index) => (
-            <Marker
-              key={index}
-              position={marker}
-              label={String(index + 1)}
-              onClick={() => setSelectedMarker(marker)}
-            />
-          ))}
+          {markers?.map((quest, index) => {
+            const questKey = Object.keys(quest)[0];
+            const { location, timestamp } = quest[questKey];
+
+            return (
+              <Marker
+                key={questKey}
+                position={location}
+                label={String(index + 1)}
+                onClick={() =>
+                  setSelectedMarker((prev) => ({
+                    ...prev,
+                    name: questKey,
+                    timestamp,
+                    location,
+                  }))
+                }
+              />
+            );
+          })}
 
           {selectedMarker && (
             <InfoWindow
-              position={selectedMarker}
+              position={selectedMarker?.location}
               onCloseClick={() => setSelectedMarker(null)}
             >
               <div>
                 <h2>Marker Details</h2>
-                <p>Name: {selectedMarker.name}</p>
-                <p>Timestamp: {selectedMarker.timestamp}</p>
+                <p>Name: {selectedMarker?.name}</p>
+                <p>Timestamp: {selectedMarker?.timestamp}</p>
               </div>
             </InfoWindow>
           )}
